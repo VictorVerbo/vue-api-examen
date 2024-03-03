@@ -40,6 +40,7 @@
 
 <script>
 import axios from 'axios';
+import {ref} from 'vue';
 
 export default {
   data() {
@@ -77,10 +78,16 @@ export default {
       return axios.get(url)
         .then(response => {
           const pokemon = response.data;
+          let imageUrl = pokemon.sprites.front_default;
+          if (!imageUrl) {
+            // Si no hay una imagen disponible, utilizar una imagen de error predeterminada
+            imageUrl = require("./assets/error.png");
+            console.log(imageUrl);
+          }
           return {
             id: pokemon.id,
             name: pokemon.name,
-            imageUrl: pokemon.sprites.front_default,
+            imageUrl: imageUrl,
             types: pokemon.types.map(type => type.type.name),
             abilities: pokemon.abilities.map(ability => ability.ability.name),
             showDetails: false
@@ -112,9 +119,6 @@ export default {
     },
     toggleDetails(pokemon) {
       pokemon.showDetails = !pokemon.showDetails;
-    },
-    handleImageError(pokemon) {
-      pokemon.imageUrl = '@/assets/logo.png'; // Cambiar a la ruta de tu icono de error
     }
   }
 };
@@ -203,28 +207,31 @@ export default {
   width: 10rem;
   height: 10rem;
   background-color: #ffffff;
-  border-radius: 50%;  
+  border-radius: 50%;
   position: relative;
   animation: spin 2s linear infinite;
 }
-.pokeball::before{
+
+.pokeball::before {
   content: '';
   width: 10rem;
   height: 5rem;
   background-color: #ff1c1c;
   border-radius: 5rem 5rem 0 0;
   position: absolute;
-  
+
 }
-.pokeball_detalle{
+
+.pokeball_detalle {
   width: 10rem;
   height: .5rem;
   background-color: #333;
   margin-top: 4.8rem;
   position: absolute;
-  
+
 }
-.pokeball_detalle::before{
+
+.pokeball_detalle::before {
   content: '';
   width: 3rem;
   height: 3rem;
@@ -234,7 +241,8 @@ export default {
   margin-top: -1.1rem;
   margin-left: 3.5rem;
 }
-.pokeball_detalle::after{
+
+.pokeball_detalle::after {
   content: '';
   width: 1.8rem;
   height: 1.8rem;
@@ -249,9 +257,9 @@ export default {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
-
 </style>
