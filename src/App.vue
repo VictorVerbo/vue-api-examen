@@ -2,6 +2,11 @@
   <div class="title-app">
     <h2 class="title">POKÉDEX INTERNACIONAL</h2>
   </div>
+  <div class="search-container">
+    <input type="text" v-model="searchQuery" placeholder="Buscar Pokémon..." class="search-input"
+      @keyup.enter="searchPokemon">
+    <button @click="searchPokemon" class="btn btn-primary">Buscar</button>
+  </div>
   <div class="pokemon-list">
     <div class="pagination">
       <button @click="firstPage" :disabled="offset === 0 || loading" class="btn btn-secondary">Inicio</button>
@@ -40,7 +45,7 @@
 
 <script>
 import axios from 'axios';
-import {ref} from 'vue';
+import { ref } from 'vue';
 
 export default {
   data() {
@@ -50,7 +55,8 @@ export default {
       offset: 0,
       totalCount: 0,
       pokemonData: [],
-      visiblePokemon: []
+      visiblePokemon: [],
+      searchQuery: ''
     };
   },
   created() {
@@ -81,8 +87,7 @@ export default {
           let imageUrl = pokemon.sprites.front_default;
           if (!imageUrl) {
             // Si no hay una imagen disponible, utilizar una imagen de error predeterminada
-            imageUrl = require("./assets/error.png");
-            console.log(imageUrl);
+            imageUrl = require("./assets/error.png")
           }
           return {
             id: pokemon.id,
@@ -119,6 +124,32 @@ export default {
     },
     toggleDetails(pokemon) {
       pokemon.showDetails = !pokemon.showDetails;
+    },
+    searchPokemon() {
+      if (this.searchQuery.trim() === '') {
+        this.fetchPokemonData();
+      } else {
+        this.loading = true;
+        const searchTerm = this.searchQuery.trim().toLowerCase();
+        axios.get(`https://pokeapi.co/api/v2/pokemon/${searchTerm}`)
+          .then(response => {
+            const pokemon = response.data;
+            const pokemonDetails = {
+              id: pokemon.id,
+              name: pokemon.name,
+              imageUrl: pokemon.sprites.front_default,
+              types: pokemon.types.map(type => type.type.name),
+              abilities: pokemon.abilities.map(ability => ability.ability.name),
+              showDetails: false
+            };
+            this.visiblePokemon = [pokemonDetails];
+            this.loading = false;
+          })
+          .catch(error => {
+            console.error('Error al obtener información del Pokémon:', error);
+            this.loading = false;
+          });
+      }
     }
   }
 };
@@ -261,5 +292,36 @@ export default {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.search-container {
+  background-color: #c01c1d;
+  display: flex;
+  width: 100%;
+  padding: 10px;
+}
+
+.search-input {
+  flex: 1;
+  margin-right: 10px;
+  background-color: #33cb66;
+  color: white;
+  border: none;
+  padding: 5px;
+  border: 2px solid #000000;
+
+}
+
+.btn-primary {
+  background-color: #3297cb;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.search-input::placeholder {
+  color: white;
+  /* Cambiar el color del placeholder a blanco */
 }
 </style>
